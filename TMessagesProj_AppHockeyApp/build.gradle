@@ -165,7 +165,7 @@ android {
 
         multiDexEnabled true
 
-        vectorDrawables.generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
+        vectorDrawables.generatedDensities = ['xxhdpi']
 
         externalNativeBuild {
             cmake {
