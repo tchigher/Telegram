@@ -1,0 +1,88 @@
+name: Telegram Android Build CI
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    
+    - name: Clone Telegram Android Repository
+      run: |
+        git clone https://github.com/DrKLO/Telegram.git $HOME/telegram-android
+    
+    - name: Build Docker Image
+      run: |
+        cd $HOME/telegram-android
+        docker build -t telegram-build .
+    
+    - name: Build Telegram APKs and Bundles
+      run: |
+        cd $HOME/telegram-android
+        docker run --rm -v "$PWD":/home/source telegram-build
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: release-${{ github.run_number }}
+        release_name: Release ${{ github.run_number }}
+        draft: false
+        prerelease: false
+    
+    - name: Upload Standalone APK
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: $HOME/telegram-android/TMessagesProj/build/outputs/apk/afat/standalone/app.apk
+        asset_name: telegram-standalone.apk
+        asset_content_type: application/vnd.android.package-archive
+    
+    - name: Upload Play Store APK
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: $HOME/telegram-android/TMessagesProj/build/outputs/apk/afat/release/app.apk
+        asset_name: telegram-playstore.apk
+        asset_content_type: application/vnd.android.package-archive
+    
+    - name: Upload Huawei APK
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: $HOME/telegram-android/TMessagesProj/build/outputs/apk/afat/release/app-huawei.apk
+        asset_name: telegram-huawei.apk
+        asset_content_type: application/vnd.android.package-archive
+    
+    - name: Upload Bundle SDK23
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: $HOME/telegram-android/TMessagesProj/build/outputs/bundle/bundleAfat_SDK23Release/TMessagesProj_App-bundleAfat_SDK23-release.aab
+        asset_name: telegram-bundle-sdk23.aab
+        asset_content_type: application/octet-stream
+    
+    - name: Upload Bundle Afat
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: $HOME/telegram-android/TMessagesProj/build/outputs/bundle/bundleAfatRelease/TMessagesProj_App-bundleAfat-release.aab
+        asset_name: telegram-bundle-afat.aab
+        asset_content_type: application/octet-stream
