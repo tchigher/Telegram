@@ -101,7 +101,7 @@ android {
             abiFilters 'arm64-v8a'
         }
 
-        vectorDrawables.generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
+        vectorDrawables.generatedDensities = ['xxhdpi']
 
         multiDexEnabled true
 
